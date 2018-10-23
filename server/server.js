@@ -27,11 +27,16 @@ app.get("/todos/:id", (req, res) => {
     return res.status(404).send();
   }
 
-  Todo.findById(req.params.id)
-    .then(todo => {
-      res.send(todo);
-    })
-    .catch(e => res.status(400).send(e));
+  Todo.findById(req.params.id).then(
+    todo => {
+      if (todo) {
+        res.status(200).send(todo);
+      } else {
+        res.status(400).send("Id Not Found");
+      }
+    },
+    e => res.status(400).send(e)
+  );
 });
 
 app.listen(3000, () => {
