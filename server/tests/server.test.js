@@ -7,7 +7,12 @@ const { Todo } = require("./../models/todo");
 
 const todos = [
   { _id: new ObjectID(), text: "Test todo one" },
-  { _id: new ObjectID(), text: "Test todo two" }
+  {
+    _id: new ObjectID(),
+    text: "Test todo two",
+    completed: true,
+    completedAt: 343
+  }
 ];
 
 beforeEach(done => {
@@ -107,7 +112,7 @@ describe("GET /todos/:id", () => {
       .end(done);
   });
 
-  it("should return 400 if id is not valid", done => {
+  it("should return 404 if id is not valid", done => {
     var hexId = 123;
     request(app)
       .get(`/todos/${hexId}`)
@@ -152,6 +157,40 @@ describe("DELETE /todos/:id", () => {
     request(app)
       .delete(`/todos/${hexId}`)
       .expect(404)
+      .end(done);
+  });
+});
+
+describe("PATCH /patch/:id", () => {
+  it("should update a todo", done => {
+    let id = todos[0]._id.toHexString();
+    let updateText = "this is updated text from the test!";
+
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({ text: updateText, completed: true })
+      .expect(200)
+      .expect(response => {
+        expect(response.body.todo.text).toBe(updateText);
+        expect(response.body.todo.completed).toBe(true);
+        expect(response.body.todo.completedAt).toBeA("number");
+      })
+      .end(done);
+  });
+
+  it("should clear completedAt when todo is not completed", done => {
+    let id = todos[1]._id.toHexString();
+    let updateText = "this is updated text from the second test!";
+
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({ text: updateText, completed: false })
+      .expect(200)
+      .expect(response => {
+        expect(response.body.todo.text).toContain(updateText);
+        expect(response.body.todo.completed).toBe(false);
+        expect(response.body.todo.completedAt).toNotExist();
+      })
       .end(done);
   });
 });

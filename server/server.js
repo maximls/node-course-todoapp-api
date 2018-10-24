@@ -1,3 +1,5 @@
+require("./config/config");
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
@@ -6,7 +8,7 @@ const { mongoose } = require("./db/mongoose");
 const { Todo } = require("./models/todo");
 const { User } = require("./models/user");
 const { ObjectID } = require("mongodb");
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 const app = express();
 
@@ -30,16 +32,15 @@ app.get("/todos/:id", (req, res) => {
     res.status(404).send("Invalid ID");
   }
 
-  Todo.findById(req.params.id).then(
-    todo => {
+  Todo.findById(req.params.id)
+    .then(todo => {
       if (todo) {
         res.status(200).send({ todo });
       } else {
         res.status(400).send("Id Not Found");
       }
-    },
-    e => res.status(400).send(e)
-  );
+    })
+    .catch(e => res.status(400).send(e));
 });
 
 app.delete("/todos/:id", (req, res) => {
@@ -68,7 +69,7 @@ app.patch("/todos/:id", (req, res) => {
   if (!ObjectID.isValid(id)) {
     res.status(404).send("Invalid ID");
   }
-  console.log(body);
+
   if (_.isBoolean(body.completed) && body.completed) {
     body.completedAt = new Date().getTime();
   } else {
@@ -85,11 +86,11 @@ app.patch("/todos/:id", (req, res) => {
       new: true
     }
   )
-    .then(result => {
-      if (!result) {
+    .then(todo => {
+      if (!todo) {
         return res.status(404).send();
       }
-      res.status(200).send({ result });
+      res.status(200).send({ todo });
     })
     .catch(err => res.status(400).send());
 });
