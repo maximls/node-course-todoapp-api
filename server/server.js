@@ -31,7 +31,7 @@ app.get("/todos/:id", (req, res) => {
   Todo.findById(req.params.id).then(
     todo => {
       if (todo) {
-        res.status(200).send(todo);
+        res.status(200).send({ todo });
       } else {
         res.status(400).send("Id Not Found");
       }
@@ -47,11 +47,11 @@ app.delete("/todos/:id", (req, res) => {
   }
 
   Todo.findByIdAndDelete(id).then(
-    doc => {
-      if (!doc) {
+    todo => {
+      if (!todo) {
         res.status(404).send();
       } else {
-        res.status(200).send(doc);
+        res.status(200).send({ todo });
       }
     },
     err => {

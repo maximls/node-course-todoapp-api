@@ -11,7 +11,7 @@ const todos = [
 ];
 
 beforeEach(done => {
-  Todo.remove({})
+  Todo.deleteMany({})
     .then(() => {
       Todo.insertMany(todos);
     })
@@ -94,7 +94,7 @@ describe("GET /todos/:id", () => {
       .get(`/todos/${todos[0]._id.toHexString()}`)
       .expect(200)
       .expect(res => {
-        expect(res.body.text).toBe(todos[0].text);
+        expect(res.body.todo.text).toBe(todos[0].text);
       })
       .end(done);
   });
@@ -118,13 +118,25 @@ describe("GET /todos/:id", () => {
 
 describe("DELETE /todos/:id", () => {
   it("should delete todo doc by id", done => {
+    let id = todos[0]._id.toHexString();
     request(app)
-      .delete(`/todos/${todos[0]._id.toHexString()}`)
+      .delete(`/todos/${id}`)
       .expect(200)
       .expect(res => {
-        expect(res.body.text).toBe(todos[0].text);
+        expect(res.body.todo.text).toBe(todos[0].text);
       })
-      .end(done);
+      .end((err, response) => {
+        if (err) return done(err);
+
+        Todo.findById(`${id}`)
+          .then(todo => {
+            expect(todo).toNotExist();
+            done();
+          })
+          .catch(err => {
+            done(err);
+          });
+      });
   });
 
   it("should return 400 if id not found", done => {
