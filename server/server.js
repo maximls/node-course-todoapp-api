@@ -19,7 +19,6 @@ app.post("/todos", (req, res) => {
     text: req.body.text
   });
   todo.save().then(doc => res.send(doc), err => res.status(400).send(err));
-  console.log(req.body);
 });
 
 app.get("/todos", (req, res) => {
@@ -93,6 +92,24 @@ app.patch("/todos/:id", (req, res) => {
       res.status(200).send({ todo });
     })
     .catch(err => res.status(400).send());
+});
+
+//Users
+
+app.post("/users", (req, res) => {
+  let body = _.pick(req.body, ["email", "password"]);
+  let user = new User(body);
+  user
+    .save()
+    .then(() => {
+      return user.generateAuthToken();
+    })
+    .then(token => {
+      res.header("x-auth", token).send(user);
+    })
+    .catch(e => {
+      res.status(400).send(e);
+    });
 });
 
 app.listen(port, () => {
